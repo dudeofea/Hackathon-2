@@ -116,7 +116,7 @@ int main(void)
 
    uint32_t text_size = 10;
    while (1) {
-      const char *text = "Oh I am so awesome";
+      const char *text = "The quick brown fox jumps over the lazy dog";
       uint32_t y_offset = height-60+text_size/2;
       graphics_resource_fill(img, 0, 0, width, height, GRAPHICS_RGBA32(0,0,0,0x00));
       // blue, at the top (y=40)
