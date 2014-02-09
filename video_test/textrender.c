@@ -62,9 +62,10 @@ int32_t render_subtitle(GRAPHICS_RESOURCE_HANDLE img, const char *text, const in
    if (text_length==0)
       return 0;
    while (split[0]) {
-      s = graphics_resource_text_dimensions_ext(img, split, text_length-(split-text), &width, &height, text_size);
+     s = graphics_resource_text_dimensions_ext(img, split, text_length /*text_length-(split-text)*/, &width, &height, text_size);
       if (s != 0) return s;
       
+      /*
       if (width > img_w) {
          const char *space = strnchr(split, text_length-(split-text), ' ');
          if (!space) {
@@ -77,6 +78,7 @@ int32_t render_subtitle(GRAPHICS_RESOURCE_HANDLE img, const char *text, const in
       } else {
          break;
       }
+      */
       
    }
    // split now points to last line of text. split-text = length of initial text. text_length-(split-text) is length of last line
