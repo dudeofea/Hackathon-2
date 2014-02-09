@@ -61,7 +61,7 @@ static void update_model(SQUARE_STATE_T *state);
 static void init_textures(SQUARE_STATE_T *state);
 static void exit_func(void);
 static volatile int terminate;
-static SQUARE_STATE_T _state=&_state;
+static SQUARE_STATE_T _state, *state=&_state;
 
 static void* eglImage = 0;
 static pthread_t thread1;
