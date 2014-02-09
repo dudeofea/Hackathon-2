@@ -42,7 +42,6 @@ int32_t render_subtitle(GRAPHICS_RESOURCE_HANDLE img, const char *text, const ui
   uint32_t text_length = strlen(text);
    uint32_t width=0, height=0;
    int32_t s=0;
-   int len = 0; // length of pre-subtitle
    uint32_t img_w, img_h;
 
    graphics_get_resource_size(img, &img_w, &img_h);
@@ -58,7 +57,7 @@ int32_t render_subtitle(GRAPHICS_RESOURCE_HANDLE img, const char *text, const ui
                                      GRAPHICS_RESOURCE_HEIGHT,
                                      GRAPHICS_RGBA32(0xff,0xff,0xff,0xff), /* fg */
                                      GRAPHICS_RGBA32(0,0,0,0x80), /* bg */
-					   text, textlength, text_size);
+					   text, text_length, text_size);
       if (s!=0) return s;
    }
    return render_subtitle(img, text, text_length, text_size, y_offset);
