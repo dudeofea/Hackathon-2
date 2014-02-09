@@ -100,7 +100,7 @@ static void init_model_proj(CUBE_STATE_T *state)
    glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
 
    glViewport(0, 0, (GLsizei)state->screen_width, (GLsizei)state->screen_height);
-      
+   
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
 
@@ -129,6 +129,22 @@ static void reset_model(CUBE_STATE_T *state)
    state->distance = 40.f;
 }
 
+//must take in all lowercase!!
+static void draw_char(const char c, int x, int y, int s){
+   int i = c - 97;
+   glTranslatef(x, y, 0.0f);
+   glVertexPointer( 3, GL_FLOAT, 0, alphabet);
+   glDrawArrays(GL_LINE_STRIP, i * 10, 10);
+   glTranslatef(-x, -y, 0.0f);
+}
+
+static void draw_text(const char *str, int x, int y, int s){
+   int i;
+   for (i = 0; i < strlen(str); i++){
+      draw_char(str[i], x + i*s, y, s);
+   }
+}
+
 //draw loop
 static void redraw_scene(CUBE_STATE_T *state)
 {
@@ -142,9 +158,6 @@ static void redraw_scene(CUBE_STATE_T *state)
    // draw first 4 vertices
    glVertexPointer( 3, GL_BYTE, 0, quadx );
    glDrawArrays( GL_TRIANGLE_STRIP, 0, 4);
-
-   //draw text
-
    glDisable(GL_TEXTURE_2D);
 
    //draw line
@@ -155,7 +168,9 @@ static void redraw_scene(CUBE_STATE_T *state)
    glDrawArrays(GL_LINES, 0, 2);
    //reset global tint
    glColor4f(1.f, 1.f, 1.f, 1.f);
-
+   glLineWidth(3.0f);
+   //draw_char('c', 0, 0, 1);
+   draw_text("hey", 0, 0, 1);
    eglSwapBuffers(state->display, state->surface);
 }
 
