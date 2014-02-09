@@ -87,10 +87,6 @@ static void init_game(CUBE_STATE_T *state)
    glMatrixMode(GL_MODELVIEW);
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-   //init font
-   //shader = shader_load("shaders/v3f-t2f-c4f.vert",
-   //                      "shaders/v3f-t2f-c4f.frag");
 }
 
 //init projections

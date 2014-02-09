@@ -5,10 +5,6 @@
 #include <assert.h>
 #include <unistd.h>
 
-//#include "freetype-gl.h"
-//#include "mat4.h"
-//#include "shader.h"
-//#include "vertex-buffer.h"
 #include "bcm_host.h"
 
 #include "GLES/gl.h"
