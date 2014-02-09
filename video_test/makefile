@@ -12,7 +12,7 @@ all: $(BIN) $(LIB)
 
 textrender.o:
 	@rm -f textrender.o
-	$(CC) $(CFLAGS) $(INCLUDES) -g -c square.c -o textrender.o -Wno-deprecated-declarations
+	$(CC) $(CFLAGS) $(INCLUDES) -g -c textrender.c -o textrender.o -Wno-deprecated-declarations
 
 %.o: %.cpp
 	@rm -f $@ 
