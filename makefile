@@ -33,6 +33,9 @@ wikiracer.bin: $(OBJS)
 %.a: $(OBJS)
 	$(AR) r $@ $^
 
+play:
+	mpg321 --aggressive -q -z -B ~/Hackathon/music &
+
 clean:
 	for i in $(OBJS); do (if test -e "$$i"; then ( rm $$i ); fi ); done
 	@rm -f $(BIN) $(LIB)
