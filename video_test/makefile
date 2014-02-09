@@ -1,4 +1,4 @@
-OBJS=square.o
+OBJS=textrender.o
 BIN=test.bin
 LDFLAGS+=-lilclient -lvgfont -lfreetype -lz
 
@@ -10,9 +10,9 @@ INCLUDES+=-I$(SDKSTAGE)/opt/vc/include/ -I$(SDKSTAGE)/opt/vc/include/interface/v
 
 all: $(BIN) $(LIB)
 
-square.o:
-	@rm -f square.o
-	$(CC) $(CFLAGS) $(INCLUDES) -g -c square.c -o square.o -Wno-deprecated-declarations
+textrender.o:
+	@rm -f textrender.o
+	$(CC) $(CFLAGS) $(INCLUDES) -g -c square.c -o textrender.o -Wno-deprecated-declarations
 
 %.o: %.cpp
 	@rm -f $@ 
@@ -20,7 +20,7 @@ square.o:
 
 test.bin: $(OBJS)
 	$(CC) -o $@ -Wl,--whole-archive $(OBJS) $(LDFLAGS) -Wl,--no-whole-archive -rdynamic
-	@rm -f square.o
+	@rm -f textrender.o
 
 %.a: $(OBJS)
 	$(AR) r $@ $^
