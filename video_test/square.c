@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include "bcm_host.h>
+#include "bcm_host.h"
 #include "GLES/gl.h"
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
@@ -51,9 +51,9 @@ static void display()
 
   glTranslate(0.25f, 0.5f, 0.0f);
   glTranslate(0.25f, 0.5f, 0.0f);
-  glScalef(0.5f, 0.5f. 0.5f);
+  glScalef(0.5f, 0.5f, 0.5f);
   
-  glDrawArrays(GL_TRIANGLES, 0.3);
+  glDrawArrays(GL_TRIANGLES, 0, 3);
   
   glPopMatrix();
 
@@ -77,11 +77,12 @@ static void display()
   glutSwapBuffers();
 }
 
-void main (char * args) 
+int  main (char * args) 
 {
   init();
   while(1)
     {
       display();
     }
+  return 0;
 }
