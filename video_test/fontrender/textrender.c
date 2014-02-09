@@ -53,12 +53,12 @@ int32_t render_subtitle(GRAPHICS_RESOURCE_HANDLE img, const char *text, const ui
    
    // split now points to last line of text. split-text = length of initial text. text_length-(split-text) is length of last line
    if (width) {
-      s = graphics_resource_render_text_ext(img, (img_w - width)>>1, y_offset-height,
+     s = graphics_resource_render_text_ext(img, img_w, img_h,
                                      GRAPHICS_RESOURCE_WIDTH,
                                      GRAPHICS_RESOURCE_HEIGHT,
                                      GRAPHICS_RGBA32(0xff,0xff,0xff,0xff), /* fg */
                                      GRAPHICS_RGBA32(0,0,0,0x80), /* bg */
-                                     split, text_length-(split-text), text_size);
+					   text, textlength, text_size);
       if (s!=0) return s;
    }
    return render_subtitle(img, text, text_length, text_size, y_offset);
