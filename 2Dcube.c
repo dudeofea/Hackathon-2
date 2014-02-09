@@ -203,8 +203,8 @@ static void reset_model(SQUARE_STATE_T *state)
    glTranslatef(0.f, 0.f, 0.f);
 
    // reset model rotation
-   state->rot_angle_x = 45.f; state->rot_angle_y = 30.f;
-   state->rot_angle_x_inc = 0.5f; state->rot_angle_y_inc = 0.5f; 
+   state->rot_angle_x = 45.f; 
+   state->rot_angle_x_inc = 0.5f;
    state->distance = 40.f;
 }
 
