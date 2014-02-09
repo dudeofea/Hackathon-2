@@ -15,6 +15,8 @@
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
 
+#include "square_texture_and_coords.h"
+
 #include "triangle.h"
 #include <pthread.h>
 
@@ -26,77 +28,6 @@
 #ifndef M_PI
 #define M_PI 3.141592654
 #endif
-
- static const GLbyte quadx[6*4*3] = {
-   /* FRONT */
-   -10, -10,  10,
-   10, -10,  10,
-   -10,  10,  10,
-   10,  10,  10,
-
-   /* BACK */
-   -10, -10, -10,
-   -10,  10, -10,
-   10, -10, -10,
-   10,  10, -10,
-
-   /* LEFT */
-   -10, -10,  10,
-   -10,  10,  10,
-   -10, -10, -10,
-   -10,  10, -10,
-
-   /* RIGHT */
-   10, -10, -10,
-   10,  10, -10,
-   10, -10,  10,
-   10,  10,  10,
-
-   /* TOP */
-   -10,  10,  10,
-   10,  10,  10,
-   -10,  10, -10,
-   10,  10, -10,
-
-   /* BOTTOM */
-   -10, -10,  10,
-   -10, -10, -10,
-   10, -10,  10,
-   10, -10, -10,
-};
-
-/** Texture coordinates for the quad. */
-static const GLfloat texCoords[6 * 4 * 2] = {
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-};
 
 typedef struct
 {
@@ -114,6 +45,10 @@ typedef struct
   //current distance from camera
   GLfloat distance;
   GLfloat distance_inc;
+  // pointers to texture buffers
+  char *tex_buf1;
+  char *tex_buf2;
+  char *tex_buf3;
 } SQUARE_STATE_T;
   
 static void init_ogl(SQUARE_STATE_T *state);
@@ -126,7 +61,7 @@ static void update_model(SQUARE_STATE_T *state);
 static void init_textures(SQUARE_STATE_T *state);
 static void exit_func(void);
 static volatile int terminate;
-static SQUARE_STATE_T _state=&_state;
+static SQUARE_STATE_T _state, *state=&_state;
 
 static void* eglImage = 0;
 static pthread_t thread1;
@@ -175,7 +110,7 @@ static void init_ogl(SQUARE_STATE_T *state)
   // get an appropriate EGL frame buffer configuration
   // uses BRCM extension that gets the closest match, rather than standard which
   // returns anything that matches.
-  result = eglSaneChooseConfigBRCM(state->display, attribute_list, &config, 1. &num_config);
+  result = eglSaneChooseConfigBRCM(state->display, attribute_list, &config, 1, &num_config);
   assert(EGL_FALSE != result);
   
   // create an EGL rendering context
@@ -196,9 +131,7 @@ static void init_ogl(SQUARE_STATE_T *state)
   dispman_update = vc_dispmanx_update_start( 0 );
   
   dispman_element = vc_dispmanx_element_add( dispman_update, dispman_display,
-					     0, &dst_rect, 0,
-					     &src_rect, DISPMANX_PROTECTION_NONE, 
-					     0, 0, 0);
+					     0, &dst_rect, 0, &src_rect, DISPMANX_PROTECTION_NONE, 0, 0, 0);
 
   nativewindow.element = dispman_element;
   nativewindow.width = state->screen_width;
@@ -226,7 +159,7 @@ static void init_ogl(SQUARE_STATE_T *state)
  * input: SQUARE_STATE_T *state - holds OGLES model info
  * Description: Sets the OpenGL|ES model to default values.
  */
-static void init_model_proj(SQUARE_STATE_T *state)
+static void init_model_proj(SQUARE_STATE_T *state);
 {
   float nearp = 1.0f;
   float farp = 500.0f;
@@ -244,7 +177,6 @@ static void init_model_proj(SQUARE_STATE_T *state)
   hwd = hht * (float)state->screen_width / (float)state->screen_height;
   
   glFrustumf(-hwd, hwd, -hht, hht, nearp, farp);
-
    
    glEnableClientState( GL_VERTEX_ARRAY );
    glVertexPointer( 3, GL_BYTE, 0, quadx );
@@ -271,8 +203,8 @@ static void reset_model(SQUARE_STATE_T *state)
    glTranslatef(0.f, 0.f, 0.f);
 
    // reset model rotation
-   state->rot_angle_x = 45.f; state->rot_angle_y = 30.f;
-   state->rot_angle_x_inc = 0.5f; state->rot_angle_y_inc = 0.5f; 
+   state->rot_angle_x = 45.f; 
+   state->rot_angle_x_inc = 0.5f;
    state->distance = 40.f;
 }
 
@@ -291,7 +223,6 @@ static void update_model(SQUARE_STATE_T *state)
 {
    // update position
    state->rot_angle_x = inc_and_wrap_angle(state->rot_angle_x, state->rot_angle_x_inc);
-   state->rot_angle_y = inc_and_wrap_angle(state->rot_angle_y, state->rot_angle_y_inc);
    state->distance = inc_and_clip_distance(state->distance, state->distance_inc);
 
    glLoadIdentity();
@@ -300,7 +231,6 @@ static void update_model(SQUARE_STATE_T *state)
 
    // Rotate model to new position
    glRotatef(state->rot_angle_x, 1.f, 0.f, 0.f);
-   glRotatef(state->rot_angle_y, 0.f, 1.f, 0.f);
 }
 
 /***********************************************************
