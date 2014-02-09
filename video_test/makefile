@@ -11,7 +11,7 @@ INCLUDES+=-I$(SDKSTAGE)/opt/vc/include/ -I$(SDKSTAGE)/opt/vc/include/interface/v
 all: $(BIN) $(LIB)
 
 2Dcube.o:
-	@rm -f 2DCube.o
+	@rm -f 2Dcube.o
 	$(CC) $(CFLAGS) $(INCLUDES) -g -c 2Dcube.c -o 2Dcube.o -Wno-deprecated-declarations
 
 %.o: %.cpp
@@ -20,6 +20,7 @@ all: $(BIN) $(LIB)
 
 test.bin: $(OBJS)
 	$(CC) -o $@ -Wl,--whole-archive $(OBJS) $(LDFLAGS) -Wl,--no-whole-archive -rdynamic
+	@rm -f 2Dcube.o
 
 %.a: $(OBJS)
 	$(AR) r $@ $^
