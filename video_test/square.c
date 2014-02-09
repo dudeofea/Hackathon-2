@@ -3,19 +3,8 @@
 static volatile int terminate;
 static CUBE_STATE_T _state, *state=&_state;
 
-
-/***********************************************************
-* Name: init_ogl
-*
-* Arguments:
-* CUBE_STATE_T *state - holds OGLES model info
-*
-* Description: Sets the display, OpenGL|ES context and screen stuff
-*
-* Returns: void
-*
-***********************************************************/
-static void init_ogl(CUBE_STATE_T *state)
+//init the game
+static void init_game(CUBE_STATE_T *state)
 {
    int32_t success = 0;
    EGLBoolean result;
@@ -95,21 +84,16 @@ static void init_ogl(CUBE_STATE_T *state)
 
    // Enable back face culling.
    glEnable(GL_CULL_FACE);
-
    glMatrixMode(GL_MODELVIEW);
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+   //init font
+   //shader = shader_load("shaders/v3f-t2f-c4f.vert",
+   //                      "shaders/v3f-t2f-c4f.frag");
 }
 
-/***********************************************************
-* Name: init_model_proj
-*
-* Arguments:
-* CUBE_STATE_T *state - holds OGLES model info
-*
-* Description: Sets the OpenGL|ES model to default values
-*
-* Returns: void
-*
-***********************************************************/
+//init projections
 static void init_model_proj(CUBE_STATE_T *state)
 {
    float nearp = 1.0f;
@@ -135,23 +119,13 @@ static void init_model_proj(CUBE_STATE_T *state)
    reset_model(state);
 }
 
-/***********************************************************
-* Name: reset_model
-*
-* Arguments:
-* CUBE_STATE_T *state - holds OGLES model info
-*
-* Description: Resets the Model projection and rotation direction
-*
-* Returns: void
-*
-***********************************************************/
+//reset initial state
 static void reset_model(CUBE_STATE_T *state)
 {
    // reset model position
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
-   glTranslatef(0.f, 0.f, -50.f);
+   glTranslatef(0.f, 0.f, -40.f);
 
    // reset model rotation
    state->rot_angle_x = 45.f; state->rot_angle_y = 30.f; state->rot_angle_z = 0.f;
@@ -159,60 +133,22 @@ static void reset_model(CUBE_STATE_T *state)
    state->distance = 40.f;
 }
 
-/***********************************************************
-* Name: update_model
-*
-* Arguments:
-* CUBE_STATE_T *state - holds OGLES model info
-*
-* Description: Updates model projection to current position/rotation
-*
-* Returns: void
-*
-***********************************************************/
-static void update_model(CUBE_STATE_T *state)
-{
-   // update position
-   //state->rot_angle_x = inc_and_wrap_angle(state->rot_angle_x, state->rot_angle_x_inc);
-   //state->rot_angle_y = inc_and_wrap_angle(state->rot_angle_y, state->rot_angle_y_inc);
-   //state->rot_angle_z = inc_and_wrap_angle(state->rot_angle_z, state->rot_angle_z_inc);
-   //state->distance = inc_and_clip_distance(state->distance, state->distance_inc);
-
-   glLoadIdentity();
-   // move camera back to see the cube
-   glTranslatef(0.f, 0.f, -state->distance);
-
-   // Rotate model to new position
-   //glRotatef(state->rot_angle_x, 1.f, 0.f, 0.f);
-   //glRotatef(state->rot_angle_y, 0.f, 1.f, 0.f);
-   //glRotatef(state->rot_angle_z, 0.f, 0.f, 1.f);
-}
-
-/***********************************************************
-* Name: redraw_scene
-*
-* Arguments:
-* CUBE_STATE_T *state - holds OGLES model info
-*
-* Description: Draws the model and calls eglSwapBuffers
-* to render to screen
-*
-* Returns: void
-*
-***********************************************************/
+//draw loop
 static void redraw_scene(CUBE_STATE_T *state)
 {
-   const char *text = "The quick brown fox jumps over the lazy dog";
    // Start with a clear screen
    glClear( GL_COLOR_BUFFER_BIT );
    glEnable(GL_TEXTURE_2D);
    // Bind texture surface to current vertices
    glBindTexture(GL_TEXTURE_2D, state->tex[0]);
    // Need to rotate textures - do this by rotating each cube face
-   glRotatef(180.f, 0.f, 0.f, 1.f ); // front face normal along z axis
+   //glRotatef(180.f, 0.f, 0.f, 1.f ); // front face normal along z axis
    // draw first 4 vertices
    glVertexPointer( 3, GL_BYTE, 0, quadx );
    glDrawArrays( GL_TRIANGLE_STRIP, 0, 4);
+
+   //draw text
+
    glDisable(GL_TEXTURE_2D);
 
    //draw line
@@ -223,35 +159,6 @@ static void redraw_scene(CUBE_STATE_T *state)
    glDrawArrays(GL_LINES, 0, 2);
    //reset global tint
    glColor4f(1.f, 1.f, 1.f, 1.f);
-
-   /*graphics_resource_fill(img, 0, 0, state->screen_width, state->screen_height, GRAPHICS_RGBA32(0,0,0,0x00));
-   // blue, at the top (y=40)
-   graphics_resource_fill(img, 0, 40, state->screen_width, 1, GRAPHICS_RGBA32(0,0,0xff,0xff));
-
-   // green, at the bottom (y=height-40)
-   graphics_resource_fill(img, 0, state->screen_height-40,state->screen_width, 1, GRAPHICS_RGBA32(0,0xff,0,0xff));
-   */
-   /*
-   // same pattern for other 5 faces - rotation chosen to make image orientation 'nice'
-   glBindTexture(GL_TEXTURE_2D, state->tex[1]);
-   glRotatef(90.f, 0.f, 0.f, 1.f ); // back face normal along z axis
-   glDrawArrays( GL_TRIANGLE_STRIP, 4, 4);
-
-   glBindTexture(GL_TEXTURE_2D, state->tex[2]);
-   glRotatef(90.f, 1.f, 0.f, 0.f ); // left face normal along x axis
-   glDrawArrays( GL_TRIANGLE_STRIP, 8, 4);
-
-   glBindTexture(GL_TEXTURE_2D, state->tex[3]);
-   glRotatef(90.f, 1.f, 0.f, 0.f ); // right face normal along x axis
-   glDrawArrays( GL_TRIANGLE_STRIP, 12, 4);
-
-   glBindTexture(GL_TEXTURE_2D, state->tex[4]);
-   glRotatef(270.f, 0.f, 1.f, 0.f ); // top face normal along y axis
-   glDrawArrays( GL_TRIANGLE_STRIP, 16, 4);
-
-   glBindTexture(GL_TEXTURE_2D, state->tex[5]);
-   glRotatef(90.f, 0.f, 1.f, 0.f ); // bottom face normal along y axis
-   glDrawArrays( GL_TRIANGLE_STRIP, 20, 4);*/
 
    eglSwapBuffers(state->display, state->surface);
 }
@@ -273,51 +180,6 @@ static void init_textures(CUBE_STATE_T *state)
    // load three texture buffers but use them on six OGL|ES texture surfaces
    //load_tex_images(state);
    state->tex[0] = load_tex_from_BMP("./background.bmp");
-   /*glGenTextures(1, &state->tex[0]);
-
-   // setup first texture
-   glBindTexture(GL_TEXTURE_2D, state->tex[0]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
-                GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf1);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
-   */
-   /*
-   // setup second texture - reuse first image
-   glBindTexture(GL_TEXTURE_2D, state->tex[1]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
-                GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf1);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
-
-   // third texture
-   glBindTexture(GL_TEXTURE_2D, state->tex[2]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
-                GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf2);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
-
-   // fourth texture - reuse second image
-   glBindTexture(GL_TEXTURE_2D, state->tex[3]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
-                GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf2);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
-
-   //fifth texture
-   glBindTexture(GL_TEXTURE_2D, state->tex[4]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
-                GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf3);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
-
-   // sixth texture - reuse third image
-   glBindTexture(GL_TEXTURE_2D, state->tex[5]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
-                GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf3);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
-   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
-   */
 
    // setup overall texture environment
    glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
@@ -382,52 +244,6 @@ GLuint load_tex_from_BMP(const char * imagepath){
    return textureID;
 }
 
-/***********************************************************
-* Name: load_tex_images
-*
-* Arguments:
-* void
-*
-* Description: Loads three raw images to use as textures on faces
-*
-* Returns: void
-*
-***********************************************************/
-static void load_tex_images(CUBE_STATE_T *state)
-{
-   FILE *tex_file1 = NULL, *tex_file2=NULL, *tex_file3 = NULL;
-   int bytes_read, image_sz = IMAGE_SIZE*IMAGE_SIZE*3;
-
-   state->tex_buf1 = malloc(image_sz);
-   state->tex_buf2 = malloc(image_sz);
-   state->tex_buf3 = malloc(image_sz);
-
-   tex_file1 = fopen(PATH "Lucca_128_128.raw", "rb");
-   if (tex_file1 && state->tex_buf1)
-   {
-      bytes_read=fread(state->tex_buf1, 1, image_sz, tex_file1);
-      assert(bytes_read == image_sz); // some problem with file?
-      fclose(tex_file1);
-   }
-   /*
-   tex_file2 = fopen(PATH "Djenne_128_128.raw", "rb");
-   if (tex_file2 && state->tex_buf2)
-   {
-      bytes_read=fread(state->tex_buf2, 1, image_sz, tex_file2);
-      assert(bytes_read == image_sz); // some problem with file?
-      fclose(tex_file2);
-   }
-
-   tex_file3 = fopen(PATH "Gaudi_128_128.raw", "rb");
-   if (tex_file3 && state->tex_buf3)
-   {
-      bytes_read=fread(state->tex_buf3, 1, image_sz, tex_file3);
-      assert(bytes_read == image_sz); // some problem with file?
-      fclose(tex_file3);
-   }
-   */
-}
-
 //------------------------------------------------------------------------------
 
 static void exit_func(void)
@@ -459,7 +275,7 @@ int main ()
    // Clear application state
    memset( state, 0, sizeof( *state ) );
    // Start OGLES
-   init_ogl(state);
+   init_game(state);
 
    // Setup the model world
    init_model_proj(state);
@@ -469,7 +285,6 @@ int main ()
 
    while (!terminate)
    {
-      update_model(state);
       redraw_scene(state);
    }
    exit_func();

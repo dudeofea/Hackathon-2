@@ -5,9 +5,10 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
+//#include "freetype-gl.h"
+//#include "mat4.h"
+//#include "shader.h"
+//#include "vertex-buffer.h"
 #include "bcm_host.h"
 
 #include "GLES/gl.h"
@@ -26,6 +27,11 @@
 #define M_PI 3.141592654
 #endif
 
+typedef struct {
+    float x, y, z;    // position
+    float s, t;       // texture
+    float r, g, b, a; // color
+} vertex_t;
 
 static const GLbyte quadx[6*1*3] = {
    /* FRONT */
@@ -56,7 +62,7 @@ typedef struct
    EGLDisplay display;
    EGLSurface surface;
    EGLContext context;
-   GLuint tex[1];
+   GLuint tex[2];
 // model rotation vector and direction
    GLfloat rot_angle_x_inc;
    GLfloat rot_angle_y_inc;
@@ -74,12 +80,10 @@ typedef struct
    char *tex_buf3;
 } CUBE_STATE_T;
 
-static void init_ogl(CUBE_STATE_T *state);
+static void init_game(CUBE_STATE_T *state);
 static void init_model_proj(CUBE_STATE_T *state);
 static void reset_model(CUBE_STATE_T *state);
 static void redraw_scene(CUBE_STATE_T *state);
-static void update_model(CUBE_STATE_T *state);
 static void init_textures(CUBE_STATE_T *state);
 static GLuint load_tex_from_BMP(const char * imagepath);
-static void load_tex_images(CUBE_STATE_T *state);
 static void exit_func(void);
