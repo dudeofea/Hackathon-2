@@ -11,7 +11,7 @@ int main()
   if(!system(NULL))
     exit(EXIT_FAILURE); //.. processor is not available.
   // Make it a daemon
-  pstat = system("mpg321 -q ~/Hackathon/music/DST-Assembly.mp3 &");
+  pstat = system("mpg321 -q -z -B ~/Hackathon/music/ &");
   printf("value returned was %d\n", pstat);
   exit(0);
 }
