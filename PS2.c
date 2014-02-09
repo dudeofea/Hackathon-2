@@ -9,10 +9,10 @@
 #define PS2_ENDPOINT		0x81
 
 #define NEUTRAL				0x0f0000
-#define CROSS_BUTTON		0x400000 | NEUTRAL
-#define SQUARE_BUTTON		0x800000 | NEUTRAL
-#define TRIANGLE_BUTTON		0x100000 | NEUTRAL
-#define CIRCLE_BUTTON		0x200000 | NEUTRAL
+#define CROSS_BUTTON		0x400000
+#define SQUARE_BUTTON		0x800000
+#define TRIANGLE_BUTTON		0x100000
+#define CIRCLE_BUTTON		0x200000
 
 #define bool char
 #define false				0
@@ -53,6 +53,19 @@ struct libusb_device *find_ps2_hub(libusb_context *context, libusb_device **devi
 	return NULL;
 }
 
+void print_controller(struct ps2_controller *cont){
+	printf("Controller 1: 0x%x ", cont->key);
+	if(cont->key & CROSS_BUTTON)
+		printf("CROSS ");
+	if(cont->key & SQUARE_BUTTON)
+		printf("SQUARE ");
+	if(cont->key & TRIANGLE_BUTTON)
+		printf("TRIANGLE ");
+	if(cont->key & CIRCLE_BUTTON)
+		printf("CIRCLE ");
+	printf("%f, %f\n", cont->lstick_x, cont->lstick_y);
+}
+
 bool is_not_neutral(struct ps2_controller *cont){
 	if(cont->key != 0)
 		return true;
@@ -72,8 +85,9 @@ int get_ps2_input(libusb_device_handle* handle){
 	int trans = 0;
 	struct ps2_controller p1;
 	struct ps2_controller p2;
+	p1.key = 0; p2.key = 0;
 	//loop until data is caught
-	while(is_not_neutral(&p1) || is_not_neutral(&p2)){
+	while(!p1.key || !p2.key){
 		int err = libusb_interrupt_transfer(handle,
 			PS2_ENDPOINT,		//endpoint
 			data,				//data buffer
@@ -85,43 +99,37 @@ int get_ps2_input(libusb_device_handle* handle){
 		}
 		if(trans == -1)
 			return -1;
-		for (int i = 0; i < trans; ++i)
-		{
-			printf("%02x ", data[i]);
-		}
-		printf("\n");
 		if(data[0] == 1){
 			p1.key = data[5] << 16 | data[6] << 8 | data[7];
-			p1.lstick_x = (data[2] - 128) / 128.0;
-			p1.lstick_y = (data[1] - 128) / 128.0;
+			if(data[1] == 0x7f && data[2] == 0x7f && data[3] == 0x7f && data[4] == 0x7f){
+				p1.lstick_x = 0.0;
+				p1.lstick_y = 0.0;
+				p1.rstick_x = 0.0;
+				p1.rstick_y = 0.0;
+			}else{
+				p1.lstick_x = (data[2] - 128) / 128.0;
+				p1.lstick_y = (data[1] - 128) / 128.0;
+				//p1.rstick_x = (data[3] - 128) / 128.0;
+				//p1.rstick_y = (data[4] - 128) / 128.0;
+			}
+			p1.key -= NEUTRAL;
 		}else if(data[0] == 2){
 			p2.key = data[5] << 16 | data[6] << 8 | data[7];
-			p2.lstick_x = (data[2] - 128) / 128.0;
-			p2.lstick_y = (data[1] - 128) / 128.0;
+			if(data[1] == 0x7f && data[2] == 0x7f && data[3] == 0x7f && data[4] == 0x7f){
+				p2.lstick_x = 0.0;
+				p2.lstick_y = 0.0;
+				p2.rstick_x = 0.0;
+				p2.rstick_y = 0.0;
+			}else{
+				p2.lstick_x = (data[2] - 128) / 128.0;
+				p2.lstick_y = (data[1] - 128) / 128.0;
+				//p2.rstick_x = (data[3] - 128) / 128.0;
+				//p2.rstick_y = (data[4] - 128) / 128.0;
+			}
+			p2.key -= NEUTRAL;
 		}
 	}
-	if (p1.key != NEUTRAL)
-	{
-		printf("Controller 1: 0x%x ", p1.key);
-		switch(p1.key){
-			case CROSS_BUTTON:		printf("CROSS"); break;
-			case SQUARE_BUTTON:		printf("SQUARE"); break;
-			case TRIANGLE_BUTTON:	printf("TRIANGLE"); break;
-			case CIRCLE_BUTTON:		printf("CIRCLE"); break;
-		}
-		printf("\n");
-	}
-	if (p2.key != NEUTRAL)
-	{
-		printf("Controller 2: 0x%x ", p2.key);
-		switch(p2.key){
-			case CROSS_BUTTON:		printf("CROSS"); break;
-			case SQUARE_BUTTON:		printf("SQUARE"); break;
-			case TRIANGLE_BUTTON:	printf("TRIANGLE"); break;
-			case CIRCLE_BUTTON:		printf("CIRCLE"); break;
-		}
-		printf("\n");
-	}
+	print_controller(&p1);
 	return 0;
 }
 

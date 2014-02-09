@@ -1,9 +1,10 @@
 import urllib2, optparse
 from bs4 import BeautifulSoup, SoupStrainer
+from random import randint
 
 parser = optparse.OptionParser()
 parser.add_option("-l", "--link", dest="link", help="link to wiki page")
-parser.add_option("-m", "--max", action="store", type="string", dest="max", help="max number of links to display")
+parser.add_option("-m", "--max", action="store", type="int", dest="max", default=0, help="max number of links to display")
 
 (options, args) = parser.parse_args()
 
@@ -18,6 +19,11 @@ for link in BeautifulSoup(page, parse_only=SoupStrainer('a')):
 			tmp = tmp[6:]
 			if tmp not in url_list:
 				url_list.append(tmp)
-#filter out links
-for link in url_list:
-	print link
+#cut down links randomly
+if options.max > 0:
+	length = min(options.max, len(url_list) - 1)
+else:
+	length = len(url_list) - 1
+tmp = len(url_list) - 1
+for i in xrange(0, length):
+	print url_list[randint(0, tmp)]
