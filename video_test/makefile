@@ -1,4 +1,5 @@
-OBJS=2Dcube.o
+
+OBJS=square.o
 BIN=test.bin
 LDFLAGS+=-lilclient
 
@@ -11,8 +12,8 @@ INCLUDES+=-I$(SDKSTAGE)/opt/vc/include/ -I$(SDKSTAGE)/opt/vc/include/interface/v
 all: $(BIN) $(LIB)
 
 2Dcube.o:
-	@rm -f 2DCube.o
-	$(CC) $(CFLAGS) $(INCLUDES) -g -c 2Dcube.c -o 2Dcube.o -Wno-deprecated-declarations
+	@rm -f square.o
+	$(CC) $(CFLAGS) $(INCLUDES) -g -c square.c -o square.o -Wno-deprecated-declarations
 
 %.o: %.cpp
 	@rm -f $@ 
