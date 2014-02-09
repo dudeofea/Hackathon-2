@@ -27,7 +27,7 @@ test.bin: $(OBJS)
 	@rm -f textrender.o
 
 square.bin: $(OBJS)
-	$(CC) -o $@ -Wl,--whole-archive $(OBJS) $(LDFLAGS) -Wl, --no-whole-archive -rdynamic
+	$(CC) -o $@ -Wl,--whole-archive $(OBJS) $(LDFLAGS) -Wl,--no-whole-archive -rdynamic
 	@rm -f square.o
 
 %.a: $(OBJS)
