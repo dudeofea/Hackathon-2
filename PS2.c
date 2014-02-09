@@ -109,10 +109,9 @@ int get_ps2_input(libusb_device_handle* handle){
 			}else{
 				p1.lstick_x = (data[2] - 128) / 128.0;
 				p1.lstick_y = (data[1] - 128) / 128.0;
-				//p1.rstick_x = (data[3] - 128) / 128.0;
-				//p1.rstick_y = (data[4] - 128) / 128.0;
+				p1.rstick_x = (data[3] - 128) / 128.0;
+				p1.rstick_y = (data[4] - 128) / 128.0;
 			}
-			p1.key -= NEUTRAL;
 		}else if(data[0] == 2){
 			p2.key = data[5] << 16 | data[6] << 8 | data[7];
 			if(data[1] == 0x7f && data[2] == 0x7f && data[3] == 0x7f && data[4] == 0x7f){
@@ -123,12 +122,13 @@ int get_ps2_input(libusb_device_handle* handle){
 			}else{
 				p2.lstick_x = (data[2] - 128) / 128.0;
 				p2.lstick_y = (data[1] - 128) / 128.0;
-				//p2.rstick_x = (data[3] - 128) / 128.0;
-				//p2.rstick_y = (data[4] - 128) / 128.0;
+				p2.rstick_x = (data[3] - 128) / 128.0;
+				p2.rstick_y = (data[4] - 128) / 128.0;
 			}
-			p2.key -= NEUTRAL;
 		}
 	}
+	p1.key -= NEUTRAL;
+	p2.key -= NEUTRAL;
 	print_controller(&p1);
 	return 0;
 }

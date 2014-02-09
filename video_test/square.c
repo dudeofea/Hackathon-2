@@ -173,69 +173,19 @@ static void reset_model(CUBE_STATE_T *state)
 static void update_model(CUBE_STATE_T *state)
 {
    // update position
-   state->rot_angle_x = inc_and_wrap_angle(state->rot_angle_x, state->rot_angle_x_inc);
-   state->rot_angle_y = inc_and_wrap_angle(state->rot_angle_y, state->rot_angle_y_inc);
-   state->rot_angle_z = inc_and_wrap_angle(state->rot_angle_z, state->rot_angle_z_inc);
-   state->distance = inc_and_clip_distance(state->distance, state->distance_inc);
+   //state->rot_angle_x = inc_and_wrap_angle(state->rot_angle_x, state->rot_angle_x_inc);
+   //state->rot_angle_y = inc_and_wrap_angle(state->rot_angle_y, state->rot_angle_y_inc);
+   //state->rot_angle_z = inc_and_wrap_angle(state->rot_angle_z, state->rot_angle_z_inc);
+   //state->distance = inc_and_clip_distance(state->distance, state->distance_inc);
 
    glLoadIdentity();
    // move camera back to see the cube
    glTranslatef(0.f, 0.f, -state->distance);
 
    // Rotate model to new position
-   glRotatef(state->rot_angle_x, 1.f, 0.f, 0.f);
-   glRotatef(state->rot_angle_y, 0.f, 1.f, 0.f);
-   glRotatef(state->rot_angle_z, 0.f, 0.f, 1.f);
-}
-
-/***********************************************************
-* Name: inc_and_wrap_angle
-*
-* Arguments:
-* GLfloat angle current angle
-* GLfloat angle_inc angle increment
-*
-* Description: Increments or decrements angle by angle_inc degrees
-* Wraps to 0 at 360 deg.
-*
-* Returns: new value of angle
-*
-***********************************************************/
-static GLfloat inc_and_wrap_angle(GLfloat angle, GLfloat angle_inc)
-{
-   angle += angle_inc;
-
-   if (angle >= 360.0)
-      angle -= 360.f;
-   else if (angle <=0)
-      angle += 360.f;
-
-   return angle;
-}
-
-/***********************************************************
-* Name: inc_and_clip_distance
-*
-* Arguments:
-* GLfloat distance current distance
-* GLfloat distance_inc distance increment
-*
-* Description: Increments or decrements distance by distance_inc units
-* Clips to range
-*
-* Returns: new value of angle
-*
-***********************************************************/
-static GLfloat inc_and_clip_distance(GLfloat distance, GLfloat distance_inc)
-{
-   distance += distance_inc;
-
-   if (distance >= 120.0f)
-      distance = 120.f;
-   else if (distance <= 40.0f)
-      distance = 40.0f;
-
-   return distance;
+   //glRotatef(state->rot_angle_x, 1.f, 0.f, 0.f);
+   //glRotatef(state->rot_angle_y, 0.f, 1.f, 0.f);
+   //glRotatef(state->rot_angle_z, 0.f, 0.f, 1.f);
 }
 
 /***********************************************************
@@ -252,19 +202,36 @@ static GLfloat inc_and_clip_distance(GLfloat distance, GLfloat distance_inc)
 ***********************************************************/
 static void redraw_scene(CUBE_STATE_T *state)
 {
+   const char *text = "The quick brown fox jumps over the lazy dog";
    // Start with a clear screen
    glClear( GL_COLOR_BUFFER_BIT );
-
-   // Draw first (front) face:
+   glEnable(GL_TEXTURE_2D);
    // Bind texture surface to current vertices
    glBindTexture(GL_TEXTURE_2D, state->tex[0]);
-
    // Need to rotate textures - do this by rotating each cube face
-   glRotatef(270.f, 0.f, 0.f, 1.f ); // front face normal along z axis
-
+   glRotatef(180.f, 0.f, 0.f, 1.f ); // front face normal along z axis
    // draw first 4 vertices
+   glVertexPointer( 3, GL_BYTE, 0, quadx );
    glDrawArrays( GL_TRIANGLE_STRIP, 0, 4);
+   glDisable(GL_TEXTURE_2D);
 
+   //draw line
+   glColor4f(0.f, 0.f, 0.f, 1.f);
+   glLineWidth(5.0f);
+   glVertexPointer( 3, GL_FLOAT, 0, linex );
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glDrawArrays(GL_LINES, 0, 2);
+   //reset global tint
+   glColor4f(1.f, 1.f, 1.f, 1.f);
+
+   /*graphics_resource_fill(img, 0, 0, state->screen_width, state->screen_height, GRAPHICS_RGBA32(0,0,0,0x00));
+   // blue, at the top (y=40)
+   graphics_resource_fill(img, 0, 40, state->screen_width, 1, GRAPHICS_RGBA32(0,0,0xff,0xff));
+
+   // green, at the bottom (y=height-40)
+   graphics_resource_fill(img, 0, state->screen_height-40,state->screen_width, 1, GRAPHICS_RGBA32(0,0xff,0,0xff));
+   */
+   /*
    // same pattern for other 5 faces - rotation chosen to make image orientation 'nice'
    glBindTexture(GL_TEXTURE_2D, state->tex[1]);
    glRotatef(90.f, 0.f, 0.f, 1.f ); // back face normal along z axis
@@ -284,7 +251,7 @@ static void redraw_scene(CUBE_STATE_T *state)
 
    glBindTexture(GL_TEXTURE_2D, state->tex[5]);
    glRotatef(90.f, 0.f, 1.f, 0.f ); // bottom face normal along y axis
-   glDrawArrays( GL_TRIANGLE_STRIP, 20, 4);
+   glDrawArrays( GL_TRIANGLE_STRIP, 20, 4);*/
 
    eglSwapBuffers(state->display, state->surface);
 }
@@ -304,8 +271,9 @@ static void redraw_scene(CUBE_STATE_T *state)
 static void init_textures(CUBE_STATE_T *state)
 {
    // load three texture buffers but use them on six OGL|ES texture surfaces
-   load_tex_images(state);
-   glGenTextures(6, &state->tex[0]);
+   //load_tex_images(state);
+   state->tex[0] = load_tex_from_BMP("./background.bmp");
+   /*glGenTextures(1, &state->tex[0]);
 
    // setup first texture
    glBindTexture(GL_TEXTURE_2D, state->tex[0]);
@@ -313,7 +281,8 @@ static void init_textures(CUBE_STATE_T *state)
                 GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf1);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
-
+   */
+   /*
    // setup second texture - reuse first image
    glBindTexture(GL_TEXTURE_2D, state->tex[1]);
    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
@@ -348,12 +317,69 @@ static void init_textures(CUBE_STATE_T *state)
                 GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf3);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
+   */
 
    // setup overall texture environment
    glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
    
    glEnable(GL_TEXTURE_2D);
+}
+
+GLuint load_tex_from_BMP(const char * imagepath){
+   // Data read from the header of the BMP file
+   unsigned char header[54]; // Each BMP file begins by a 54-bytes header
+   unsigned int dataPos;     // Position in the file where the actual data begins
+   unsigned int width, height;
+   unsigned int imageSize;   // = width*height*3
+   // Actual RGB data
+   unsigned char * data;
+
+   // Open the file
+   FILE * file = fopen(imagepath,"rb");
+   if (!file){
+      printf("Image could not be opened\n"); return 0;
+   }
+   if ( fread(header, 1, 54, file)!=54 ){ // If not 54 bytes read : problem
+      printf("Not a correct BMP file\n");
+      return 0;
+   }
+   if ( header[0]!='B' || header[1]!='M' ){
+    printf("Not a correct BMP file\n");
+    return 0;
+   }
+   // Read ints from the byte array
+   dataPos    = *(int*)&(header[0x0A]);
+   imageSize  = *(int*)&(header[0x22]);
+   width      = *(int*)&(header[0x12]);
+   height     = *(int*)&(header[0x16]);
+   // Some BMP files are misformatted, guess missing information
+   if (imageSize==0)
+      imageSize=width*height*3; // 3 : one byte for each Red, Green and Blue component
+   if (dataPos==0)
+      dataPos=54; // The BMP header is done that way
+   // Create a buffer
+   data = malloc(imageSize);
+    
+   // Read the actual data from the file into the buffer
+   fread(data,1,imageSize,file);
+    
+   //Everything is in memory now, the file can be closed
+   fclose(file);
+   // Create one OpenGL texture
+   GLuint textureID;
+   glGenTextures(1, &textureID);
+    
+   // "Bind" the newly created texture : all future texture functions will modify this texture
+   glBindTexture(GL_TEXTURE_2D, textureID);
+    
+   // Give the image to OpenGL
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+   return textureID;
 }
 
 /***********************************************************
@@ -383,7 +409,7 @@ static void load_tex_images(CUBE_STATE_T *state)
       assert(bytes_read == image_sz); // some problem with file?
       fclose(tex_file1);
    }
-
+   /*
    tex_file2 = fopen(PATH "Djenne_128_128.raw", "rb");
    if (tex_file2 && state->tex_buf2)
    {
@@ -399,6 +425,7 @@ static void load_tex_images(CUBE_STATE_T *state)
       assert(bytes_read == image_sz); // some problem with file?
       fclose(tex_file3);
    }
+   */
 }
 
 //------------------------------------------------------------------------------
@@ -429,10 +456,8 @@ static void exit_func(void)
 int main ()
 {
    bcm_host_init();
-
    // Clear application state
    memset( state, 0, sizeof( *state ) );
-      
    // Start OGLES
    init_ogl(state);
 
@@ -440,7 +465,7 @@ int main ()
    init_model_proj(state);
 
    // initialise the OGLES texture(s)
-   //init_textures(state);
+   init_textures(state);
 
    while (!terminate)
    {
