@@ -51,7 +51,7 @@ int main(void)
    uint32_t text_size = 10;
    while (1) {
       const char *text = "The quick brown fox jumps over the lazy dog";
-      uint32_t y_offset = height-60+text_size/2;
+      uint32_t y_offset = height;
       graphics_resource_fill(img, 0, 0, width, height, GRAPHICS_RGBA32(0,0,0,0x00));
       // blue, at the top (y=40)
       graphics_resource_fill(img, 0, 40, width, 1, GRAPHICS_RGBA32(0,0,0xff,0xff));
