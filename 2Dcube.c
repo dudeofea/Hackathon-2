@@ -106,7 +106,7 @@ static void init_ogl(SQUARE_STATE_T *state)
   // get an appropriate EGL frame buffer configuration
   // uses BRCM extension that gets the closest match, rather than standard which
   // returns anything that matches.
-  result = eglSaneChooseConfigBRCM(state->display, attribute_list, &config, 1. &num_config);
+  result = eglSaneChooseConfigBRCM(state->display, attribute_list, &config, 1, &num_config);
   assert(EGL_FALSE != result);
   
   // create an EGL rendering context
@@ -127,9 +127,7 @@ static void init_ogl(SQUARE_STATE_T *state)
   dispman_update = vc_dispmanx_update_start( 0 );
   
   dispman_element = vc_dispmanx_element_add( dispman_update, dispman_display,
-					     0, &dst_rect, 0,
-					     &src_rect, DISPMANX_PROTECTION_NONE, 
-					     0, 0, 0);
+					     0, &dst_rect, 0, &src_rect, DISPMANX_PROTECTION_NONE, 0, 0, 0);
 
   nativewindow.element = dispman_element;
   nativewindow.width = state->screen_width;
@@ -175,7 +173,6 @@ static void init_model_proj(SQUARE_STATE_T *state);
   hwd = hht * (float)state->screen_width / (float)state->screen_height;
   
   glFrustumf(-hwd, hwd, -hht, hht, nearp, farp);
-
    
    glEnableClientState( GL_VERTEX_ARRAY );
    glVertexPointer( 3, GL_BYTE, 0, quadx );
