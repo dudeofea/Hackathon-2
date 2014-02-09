@@ -21,7 +21,7 @@ int32_t render_text(GRAPHICS_RESOURCE_HANDLE img, const char *text, const uint32
 
   if (text_length == 0) return 0;
 
-  s = graphic_resource_text_dimensions_ext(img, text, text_length, &width, &height, text_size);
+  s = graphics_resource_text_dimensions_ext(img, text, text_length, &width, &height, text_size);
   
   if (s != 0) return s;
 }
