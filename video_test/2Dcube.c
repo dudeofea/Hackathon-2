@@ -2,134 +2,10 @@
  * 2-D Square rendered with openGL
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <assert.h>
-#include <unistd.h>
+#include "2Dcube.h"
 
-#include "bcm_host.h"
-
-#include "GLES/gl.h"
-#include "EGL/egl.h"
-#include "EGL/eglext.h"
-
-#include "triangle.h"
-#include <pthread.h>
-
-#define PATH "./"
-
-#define IMAGE_SIZE_WIDTH 1920
-#define IMAGE_SIZE_HEIGHT 1080
-
-#ifndef M_PI
-#define M_PI 3.141592654
-#endif
-
- static const GLbyte quadx[6*4*3] = {
-   /* FRONT */
-   -10, -10,  10,
-   10, -10,  10,
-   -10,  10,  10,
-   10,  10,  10,
-
-   /* BACK */
-   -10, -10, -10,
-   -10,  10, -10,
-   10, -10, -10,
-   10,  10, -10,
-
-   /* LEFT */
-   -10, -10,  10,
-   -10,  10,  10,
-   -10, -10, -10,
-   -10,  10, -10,
-
-   /* RIGHT */
-   10, -10, -10,
-   10,  10, -10,
-   10, -10,  10,
-   10,  10,  10,
-
-   /* TOP */
-   -10,  10,  10,
-   10,  10,  10,
-   -10,  10, -10,
-   10,  10, -10,
-
-   /* BOTTOM */
-   -10, -10,  10,
-   -10, -10, -10,
-   10, -10,  10,
-   10, -10, -10,
-};
-
-/** Texture coordinates for the quad. */
-static const GLfloat texCoords[6 * 4 * 2] = {
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-
-   0.f,  0.f,
-   1.f,  0.f,
-   0.f,  1.f,
-   1.f,  1.f,
-};
-
-typedef struct
-{
-  uint32_t screen_width;
-  uint32_t screen_height;
-  // OpenGL|ES objects
-  EGLDisplay display;
-  EGLSurface surface;
-  EGLContext context;
-  GLuint text;
-  // model rotation vector and direction
-  GLfloat rot_angle_x_inc; // Since it is 2-D
-  // current model rotation angle
-  GLfloat rot_angle_x;
-  //current distance from camera
-  GLfloat distance;
-  GLfloat distance_inc;
-} SQUARE_STATE_T;
-  
-static void init_ogl(SQUARE_STATE_T *state);
-static void init_model_proj(SQUARE_STATE_T *state);
-static void reset_model(SQUARE_STATE_T *state);
-static GLfloat inc_and_wrap_angle(GLfloat angle, GLfloat angle_inc);
-static GLfloat inc_and_clip_distance(GLfloat distance, GLfloat distance_inc);
-static void redraw_scene(SQUARE_STATE_T *state);
-static void update_model(SQUARE_STATE_T *state);
-static void init_textures(SQUARE_STATE_T *state);
-static void exit_func(void);
 static volatile int terminate;
-static SQUARE_STATE_T _state=&_state;
-
-static void* eglImage = 0;
-static pthread_t thread1;
+static SQUARE_STATE_T _state, *state=&_state;
 
 /*
  * init_ogl
@@ -175,7 +51,7 @@ static void init_ogl(SQUARE_STATE_T *state)
   // get an appropriate EGL frame buffer configuration
   // uses BRCM extension that gets the closest match, rather than standard which
   // returns anything that matches.
-  result = eglSaneChooseConfigBRCM(state->display, attribute_list, &config, 1. &num_config);
+  result = eglSaneChooseConfigBRCM(state->display, attribute_list, &config, 1, &num_config);
   assert(EGL_FALSE != result);
   
   // create an EGL rendering context
@@ -196,9 +72,7 @@ static void init_ogl(SQUARE_STATE_T *state)
   dispman_update = vc_dispmanx_update_start( 0 );
   
   dispman_element = vc_dispmanx_element_add( dispman_update, dispman_display,
-					     0, &dst_rect, 0,
-					     &src_rect, DISPMANX_PROTECTION_NONE, 
-					     0, 0, 0);
+					     0, &dst_rect, 0, &src_rect, DISPMANX_PROTECTION_NONE, 0, 0, 0);
 
   nativewindow.element = dispman_element;
   nativewindow.width = state->screen_width;
@@ -244,7 +118,6 @@ static void init_model_proj(SQUARE_STATE_T *state)
   hwd = hht * (float)state->screen_width / (float)state->screen_height;
   
   glFrustumf(-hwd, hwd, -hht, hht, nearp, farp);
-
    
    glEnableClientState( GL_VERTEX_ARRAY );
    glVertexPointer( 3, GL_BYTE, 0, quadx );
@@ -271,8 +144,8 @@ static void reset_model(SQUARE_STATE_T *state)
    glTranslatef(0.f, 0.f, 0.f);
 
    // reset model rotation
-   state->rot_angle_x = 45.f; state->rot_angle_y = 30.f;
-   state->rot_angle_x_inc = 0.5f; state->rot_angle_y_inc = 0.5f; 
+   state->rot_angle_x = 45.f; 
+   state->rot_angle_x_inc = 0.5f;
    state->distance = 40.f;
 }
 
@@ -291,7 +164,6 @@ static void update_model(SQUARE_STATE_T *state)
 {
    // update position
    state->rot_angle_x = inc_and_wrap_angle(state->rot_angle_x, state->rot_angle_x_inc);
-   state->rot_angle_y = inc_and_wrap_angle(state->rot_angle_y, state->rot_angle_y_inc);
    state->distance = inc_and_clip_distance(state->distance, state->distance_inc);
 
    glLoadIdentity();
@@ -300,7 +172,6 @@ static void update_model(SQUARE_STATE_T *state)
 
    // Rotate model to new position
    glRotatef(state->rot_angle_x, 1.f, 0.f, 0.f);
-   glRotatef(state->rot_angle_y, 0.f, 1.f, 0.f);
 }
 
 /***********************************************************
@@ -424,42 +295,42 @@ static void init_textures(SQUARE_STATE_T *state)
 
    // setup first texture
    glBindTexture(GL_TEXTURE_2D, state->tex[0]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE_WIDTH, IMAGE_SIZE_HEIGHT, 0,
                 GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf1);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
 
    // setup second texture - reuse first image
    glBindTexture(GL_TEXTURE_2D, state->tex[1]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE_WIDTH, IMAGE_SIZE_HEIGHT, 0,
                 GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf1);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
 
    // third texture
    glBindTexture(GL_TEXTURE_2D, state->tex[2]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE_WIDTH, IMAGE_SIZE_HEIGHT, 0,
                 GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf2);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
 
    // fourth texture - reuse second image
    glBindTexture(GL_TEXTURE_2D, state->tex[3]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE_WIDTH, IMAGE_SIZE_HEIGHT, 0,
                 GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf2);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
 
    //fifth texture
    glBindTexture(GL_TEXTURE_2D, state->tex[4]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE_WIDTH, IMAGE_SIZE_HEIGHT, 0,
                 GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf3);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
 
    // sixth texture - reuse third image
    glBindTexture(GL_TEXTURE_2D, state->tex[5]);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE, IMAGE_SIZE, 0,
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, IMAGE_SIZE_WIDTH, IMAGE_SIZE_HEIGHT, 0,
                 GL_RGB, GL_UNSIGNED_BYTE, state->tex_buf3);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_NEAREST);
@@ -485,7 +356,7 @@ static void init_textures(SQUARE_STATE_T *state)
 static void load_tex_images(SQUARE_STATE_T *state)
 {
    FILE *tex_file1 = NULL, *tex_file2=NULL, *tex_file3 = NULL;
-   int bytes_read, image_sz = IMAGE_SIZE*IMAGE_SIZE*3;
+   int bytes_read, image_sz = IMAGE_SIZE_WIDTH*IMAGE_SIZE_HEIGHT*3;
 
    state->tex_buf1 = malloc(image_sz);
    state->tex_buf2 = malloc(image_sz);

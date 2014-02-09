@@ -14,6 +14,19 @@
 #define TRIANGLE_BUTTON		0x100000 | NEUTRAL
 #define CIRCLE_BUTTON		0x200000 | NEUTRAL
 
+#define bool char
+#define false				0
+#define true				1
+
+struct ps2_controller
+{
+	int key;
+	float lstick_x;
+	float lstick_y;
+	float rstick_x;
+	float rstick_y;
+};
+
 //find the first quckcam express camera attached to usb
 struct libusb_device *find_ps2_hub(libusb_context *context, libusb_device **devices){
 	
@@ -40,13 +53,27 @@ struct libusb_device *find_ps2_hub(libusb_context *context, libusb_device **devi
 	return NULL;
 }
 
+bool is_not_neutral(struct ps2_controller *cont){
+	if(cont->key != 0)
+		return true;
+	if(cont->lstick_x != 0.0)
+		return true;
+	if(cont->lstick_y != 0.0)
+		return true;
+	if(cont->rstick_x != 0.0)
+		return true;
+	if(cont->rstick_y != 0.0)
+		return true;
+	return false;
+}
+
 int get_ps2_input(libusb_device_handle* handle){
 	unsigned char data[8];
 	int trans = 0;
-	int p1_key = -1;
-	int p2_key = -1;
+	struct ps2_controller p1;
+	struct ps2_controller p2;
 	//loop until data is caught
-	while(p1_key < 0 || p2_key < 0){
+	while(is_not_neutral(&p1) || is_not_neutral(&p2)){
 		int err = libusb_interrupt_transfer(handle,
 			PS2_ENDPOINT,		//endpoint
 			data,				//data buffer
@@ -58,21 +85,25 @@ int get_ps2_input(libusb_device_handle* handle){
 		}
 		if(trans == -1)
 			return -1;
-		/*for (int i = 0; i < trans; ++i)
+		for (int i = 0; i < trans; ++i)
 		{
 			printf("%02x ", data[i]);
 		}
-		printf("\n");*/
+		printf("\n");
 		if(data[0] == 1){
-			p1_key = data[5] << 16 | data[6] << 8 | data[7];
+			p1.key = data[5] << 16 | data[6] << 8 | data[7];
+			p1.lstick_x = (data[2] - 128) / 128.0;
+			p1.lstick_y = (data[1] - 128) / 128.0;
 		}else if(data[0] == 2){
-			p2_key = data[5] << 16 | data[6] << 8 | data[7];
+			p2.key = data[5] << 16 | data[6] << 8 | data[7];
+			p2.lstick_x = (data[2] - 128) / 128.0;
+			p2.lstick_y = (data[1] - 128) / 128.0;
 		}
 	}
-	if (p1_key != NEUTRAL)
+	if (p1.key != NEUTRAL)
 	{
-		printf("Controller 1: 0x%x ", p1_key);
-		switch(p1_key){
+		printf("Controller 1: 0x%x ", p1.key);
+		switch(p1.key){
 			case CROSS_BUTTON:		printf("CROSS"); break;
 			case SQUARE_BUTTON:		printf("SQUARE"); break;
 			case TRIANGLE_BUTTON:	printf("TRIANGLE"); break;
@@ -80,10 +111,10 @@ int get_ps2_input(libusb_device_handle* handle){
 		}
 		printf("\n");
 	}
-	if (p2_key != NEUTRAL)
+	if (p2.key != NEUTRAL)
 	{
-		printf("Controller 2: 0x%x ", p2_key);
-		switch(p2_key){
+		printf("Controller 2: 0x%x ", p2.key);
+		switch(p2.key){
 			case CROSS_BUTTON:		printf("CROSS"); break;
 			case SQUARE_BUTTON:		printf("SQUARE"); break;
 			case TRIANGLE_BUTTON:	printf("TRIANGLE"); break;

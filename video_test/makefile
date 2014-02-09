@@ -11,7 +11,7 @@ INCLUDES+=-I$(SDKSTAGE)/opt/vc/include/ -I$(SDKSTAGE)/opt/vc/include/interface/v
 
 all: $(BIN) $(LIB)
 
-2Dcube.o:
+square.o:
 	@rm -f square.o
 	$(CC) $(CFLAGS) $(INCLUDES) -g -c square.c -o square.o -Wno-deprecated-declarations
 
@@ -21,6 +21,7 @@ all: $(BIN) $(LIB)
 
 test.bin: $(OBJS)
 	$(CC) -o $@ -Wl,--whole-archive $(OBJS) $(LDFLAGS) -Wl,--no-whole-archive -rdynamic
+	@rm -f square.o
 
 %.a: $(OBJS)
 	$(AR) r $@ $^
