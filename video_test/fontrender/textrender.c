@@ -60,7 +60,7 @@ int32_t render_subtitle(GRAPHICS_RESOURCE_HANDLE img, const char *text, const ui
 					   text, text_length, text_size);
       if (s!=0) return s;
    }
-   return render_subtitle(img, text, text_length, text_size, y_offset);
+   return render_subtitle(img, text, text_size, y_offset);
 }
 
 int main(void)
@@ -97,7 +97,7 @@ int main(void)
       graphics_resource_fill(img, 0, height-40, width, 1, GRAPHICS_RGBA32(0,0xff,0,0xff));
 
       // draw the subtitle text
-      render_subtitle(img, text, 0, text_size,  y_offset);
+      render_subtitle(img, text, text_size,  y_offset);
       graphics_update_displayed_resource(img, 0, 0, 0, 0);
       text_size += 1;
       if (text_size > 50)
