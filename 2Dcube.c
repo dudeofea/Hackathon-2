@@ -45,6 +45,10 @@ typedef struct
   //current distance from camera
   GLfloat distance;
   GLfloat distance_inc;
+  // pointers to texture buffers
+  char *tex_buf1;
+  char *tex_buf2;
+  char *tex_buf3;
 } SQUARE_STATE_T;
   
 static void init_ogl(SQUARE_STATE_T *state);
