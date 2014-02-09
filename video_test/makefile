@@ -16,7 +16,7 @@ textrender.o:
 
 square.o:
 	@rm -f square.o
-	$(CC) $CFLAGS) $(INCLUDES) -g -c square.c -o square.o -Wno-deprecated-declarations
+	$(CC) $(CFLAGS) $(INCLUDES) -g -c square.c -o square.o -Wno-deprecated-declarations
 
 %.o: %.cpp
 	@rm -f $@ 
