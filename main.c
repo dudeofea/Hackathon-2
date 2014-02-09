@@ -166,6 +166,7 @@ int main ()
 				p1_list[i] = (char*)malloc(24*sizeof(char));
 			}
 			get_all_links(p1_list, &buf[0], p1_size);
+			p1_cont.key = NEUTRAL;
 		}
 		if(p2_cont.key == CROSS_BUTTON){
 			char buf[25];
@@ -176,6 +177,7 @@ int main ()
 				p2_list[i] = (char*)malloc(24*sizeof(char));
 			}
 			get_all_links(p2_list, &buf[0], p2_size);
+			p1_cont.key = NEUTRAL;
 		}
 		redraw_scene(state);
 	}
